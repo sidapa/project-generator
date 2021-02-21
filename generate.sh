@@ -9,8 +9,8 @@ read rails_version
 echo "Path to db-data directory"
 read db_data_path
 
-echo "Generating Dockerfile."
-curl -s https://raw.githubusercontent.com/sidapa/project-generator/wip/lib/Dockerfile \
+echo "Generating prebuild Dockerfile."
+curl -s https://raw.githubusercontent.com/sidapa/project-generator/wip/lib/Dockerfile.prebuild \
   | sed "s/<ruby_version>/$ruby_version/g" \
   | sed "s/<project_name>/$project_name/g" \
   > ./Dockerfile
@@ -52,6 +52,7 @@ echo "Generating empty files."
 declare -a FileList=(
                   "Gemfile.lock"
                   "package.json"
+                  "yarn.lock"
                 )
 for entry in "${FileList[@]}"
 do
@@ -62,3 +63,18 @@ done
 echo "Generating files from samples."
 cp docker-compose.override.yml.sample docker-compose.override.yml
 cp .env.sample .env
+
+echo "Generating Rails Project."
+docker-compose run web bundle exec rails new . -T -f -S -d mysql
+
+echo "Shutting down the docker containers."
+docker-compose down
+
+echo "Replacing prebuild Dockerfile"
+curl -s https://raw.githubusercontent.com/sidapa/project-generator/wip/lib/Dockerfile \
+  | sed "s/<ruby_version>/$ruby_version/g" \
+  | sed "s/<project_name>/$project_name/g" \
+  > ./Dockerfile
+
+echo "Rebuilding the Docker Image"
+docker-compose build web
