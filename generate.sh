@@ -27,9 +27,10 @@ curl -s https://raw.githubusercontent.com/sidapa/project-generator/wip/lib/docke
   > ./docker-compose.yml
 
 echo "Generating docker-compose.override.yml.sample file."
+escaped_db_data_path=$(printf '%s\n' "$db_data_path" | sed -e 's/[\/&]/\\&/g')
 curl -s https://raw.githubusercontent.com/sidapa/project-generator/wip/lib/docker-compose.override.yml.sample \
   | sed "s/<project_name>/$project_name/g" \
-  | sed "s/<db_data_path>/$db_data_path/g" \
+  | sed "s/<db_data_path>/$escaped_db_data_path/g" \
   > ./docker-compose.override.yml.sample
 
 echo "Generating .env.sample file."
