@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  db:
+    image: mariadb:10.5.3
+    volumes:
+      - <db_data_path>/<project_name>:/var/lib/mysql
+    env_file:
+      - ./.env
+    ports:
+      - 3306:3306
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - FONTAWESOME_NPM_AUTH_TOKEN
+    links:
+      - db
+    volumes:
+      - .:/<project_name>
+      - '/<project_name>/node_modules'
+    ports:
+      - "80:3000"
+    env_file:
+      - ./.env
